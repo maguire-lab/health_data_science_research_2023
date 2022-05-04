@@ -11,14 +11,14 @@ items:
   name: Lectures
   icon_class: fas fa-book-reader
 
-- url: /assignments/
-  name: Assignments
+- url: /practicals/
+  name: Practicals
   icon_class: fas fa-user-graduate
 
-- url: /project/
-  name: Project
+- url: /proposal/
+  name: Proposal 
   icon_class: fas fa-user-graduate
 
-- url: /materials/
-  name: Materials
+- url: /literature/
+  name: Literature 
   icon_class: fas fa-book

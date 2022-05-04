@@ -1,22 +1,19 @@
 # Site settings
-course_name: History of Magic
-course_description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ornare aliquam mattis. Donec hendrerit sollicitudin urna. Aliquam venenatis rutrum velit, at lobortis dui cursus a. Nam varius metus in turpis maximus, ut rhoncus tellus dictum. In aliquam tortor nec mi dapibus, sit amet vehicula dolor auctor."
-course_semester: "Fall 1998"
+course_name: Applied Research in Health Data Science
+course_description: "This course is an introduction to the application of data science methods to health data within interdisciplinary research contexts. Students will be introduced to the main types of health data and their principal analysis methods while developing key research skills specific to effectively working at the intersection of medicine and computer science.  This will encompass developing technical skills in the robust/reproducible analysis of data from medical databases, radiological imaging, electronic medical records, and physiological time-series data. Students will also gain specific training in developing interdisciplinary health data science research proposals including key considerations such as research ethics, data legislation, knowledge translation, and effective collaboration."
+course_semester: "Summer 2021-2022"
 
-baseurl: "/jekyll-course-website-template" # the subpath of your site, e.g. /blog/
-url: "http://kazemnejad.github.io/" # the base hostname & protocol for your site
+baseurl: "/health-data-science-research" # the subpath of your site, e.g. /blog/
+url: "https://maguire-lab.github.io" # the base hostname & protocol for your site
 
-schoolname: "Hogwarts"
-schoolurl: "https://hogwarts.edu"
-twitter_username: username 
+schoolname: "Dalhousie University"
+schoolurl: "https://dal.ca"
+twitter_username: finlaym 
 
 address: |
-    School of Witchcraft and Wizardry
-    Hogwarts
-    Scotland
-
-# Set your Google Analytics tracking ID (set up yours at http://www.google.com/analytics/)
-# google_analytics: UA-XXXXXXXX-X
+    4239 Mona Campbell Building
+    Studley Campus
+    Dalhousie University
 
 ### Do not change the followings unless you know what you are doing ###
 
@@ -30,7 +27,7 @@ excerpt_separator: "<!--more-->"
 include: ['_images', '_css']
 exclude: ['develop']
 
-dateformat: "%m/%d/%Y"
+dateformat: "%Y/%m/%d"
 
 future: true
 collections:
