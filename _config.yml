@@ -33,9 +33,6 @@ kramdown:
 permalink: blog/:year/:month/:title
 excerpt_separator: "<!--more-->"
 
-include: ['_images', '_css']
-exclude: ['develop']
-
 dateformat: "%Y/%m/%d"
 
 future: true
