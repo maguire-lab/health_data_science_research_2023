@@ -13,6 +13,8 @@ layout: home
 
 - Email: finlay.maguire@dal.ca
 
+- [Syllabus](/static_files/2022_syllabus.pdf)
+
 ## Course Learning Outcomes
 The aim of this course is to provide students with the skills and knowledge required to plan effective research in the application of data science approaches to medical data. Specifically, by the end of the course students will:
 Understand the 4 principal sources and data types of medical data: longitudinal databases (tabular), electronic medical records (structured, semi-structured, and unstructured text), radiological imaging (image), and physiological (signal and time-series).
