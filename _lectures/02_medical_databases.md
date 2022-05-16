@@ -1,6 +1,10 @@
-#---
-#type: lecture
-#date: 2022-05-16T13:00:00+3:00
-#title: Lecture 1 - Medical Databases
-#tldr: "An overview of ontologies, weights, dimensionality reduction and boosted decision trees for tabular data from medical databases"
-#---
+---
+type: lecture
+date: 2022-05-16T13:00:00+3:00
+title: Lecture 1 - Medical Databases
+tldr: "An overview of medical databases, approaches for exploratory data analysis, and introduction to supervised learning on tabular data"
+links: 
+    - url: /static_files/lectures/lecture_1_medical_databases.pdf
+      name: slides 
+---
+
