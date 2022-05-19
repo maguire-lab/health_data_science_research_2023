@@ -1,0 +1,15 @@
+# Data Dictionary
+PatientID: Unique identifier for each patient 
+AppointmentID: Unique identifier to each appointment 
+Gender: Patient Gender (limited to Male or Female)
+ScheduledDate: date on which the appointment was scheduled
+AppointmentDate: date of the actual appointment
+Age: Patient age
+Neighbourhood: District of Vitória in which the appointment 
+SocialWelfare: Patient is a recipient of Bolsa Família welfare payments
+Hypertension: Patient previously diagnoised with hypertensio (Boolean)
+Diabetes: Patient previously diagnosed with diabetes (Boolean)
+AlcoholUseDisorder: Patient previously diagnosed with alcohol use disorder (Boolean)
+Disability: Patient previously diagnosed with a disability True/False (Boolean)
+SMSReceived: At least 1 reminder text sent before appointment (Boolean)
+NoShow: Patient did not attend scheduled appointment (Boolean: Yes/No)
