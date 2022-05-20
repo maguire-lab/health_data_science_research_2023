@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 library(readr)          # Data Input
+library(tidymodels)     # Data Manipulation
 library(lubridate)      # Data Manupulation
 library(dplyr)          # Data Manipulation
 library(reshape2)       # Data Manipulation
@@ -45,7 +46,7 @@ The data required is available via the [course website](https://github.com/magui
 **4** Modify the following to make it reproducible i.e., downloads the data file directly from version control
 
 ```{r parse}
-raw.data <- read_csv('lab1_data/2016_05v2_VitoriaAppointmentData.csv')#, col_types='ccfTTicllllflf')
+raw.data <- read_csv('lab1_data/2016_05v2_VitoriaAppointmentData.csv', col_types='fffTTifllllflf')
 #raw.data <- readr::read_csv('https://raw.githubusercontent.com/maguire-lab/health_data_science_research/ ... ')
 ```
 
@@ -79,6 +80,7 @@ Let's explore the correlation between variables:
 
 # let's define a plotting function
 corplot = function(df){
+  
   cor_matrix_raw <- round(cor(df),2)
   cor_matrix <- melt(cor_matrix_raw)
   
@@ -96,7 +98,6 @@ corplot = function(df){
     return(cor_matrix_raw)
   }
   
-  
   upper_tri <- get_upper_tri(cor_matrix_raw)
   
   # Melt the correlation matrix
@@ -111,7 +112,7 @@ corplot = function(df){
     theme_minimal()+ 
     theme(axis.text.x = element_text(angle = 45, vjust = 1, 
                                      size = 8, hjust = 1))+
-    coord_fixed()+ geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+    coord_fixed()+ geom_text(aes(Var2, Var1, label = value), color = "black", size = 2) +
     theme(
       axis.title.x = element_blank(),
       axis.title.y = element_blank(),
@@ -125,13 +126,10 @@ corplot = function(df){
   cor_graph
 }
 
-raw.data$NoShow.numeric = as.numeric(ifelse(raw.data$NoShow=="Yes",1,0))
-
-# Find all numerical vars in dataframe
-numerical.vars = sapply(raw.data, is.numeric)
+numeric.data = mutate_all(raw.data, function(x) as.numeric(x))
 
 # Plot Correlation Heatmap
-corplot(raw.data[,numerical.vars])
+corplot(numeric.data)
 
 ```
 
@@ -146,11 +144,10 @@ In this case, we are particularly interested in relationships between `NoShow` a
 
 Let's look at some individual variables and their relationship with `NoShow`.
 
-```{r, warning=FALSE,fig.align="center"}
-ggplot(raw.data,aes(x=Age,fill=`NoShow`))+
-  geom_density(color="white",alpha=0.8)+
-  ggtitle("Density of Age across No Show")+
-  scale_fill_manual(values=c("grey50","orangered"))
+```{r,fig.align="center"}
+ggplot(raw.data) + 
+  geom_density(aes(x=Age, fill=NoShow), alpha=0.8) + 
+  ggtitle("Density of Age by Attendence")
 ```
 There does seem to be a difference in the distribution of ages of people that miss and don't miss appointments.  
 However, the shape of this distribution means the actual correlation is near 0 in the heatmap above. This highlights the need to look at individual variables.
@@ -158,16 +155,16 @@ However, the shape of this distribution means the actual correlation is near 0 i
 Let's take a closer look at age by breaking it into categories.
 
 ```{r, fig.align="center"}
-raw.data$Age.Range = cut(raw.data$Age,breaks = seq(0,120,10))
-ggplot(raw.data,aes(x=Age.Range,y=1,fill=NoShow))+
-  geom_bar(stat="identity",width=0.5)+
-  ggtitle("Amount of No Show across Age Ranges")+
-  scale_fill_manual(values=c("grey50","orangered"))
+raw.data <- raw.data %>% mutate(Age.Range=cut_interval(Age, length=10))
 
-ggplot(raw.data,aes(x=Age.Range,y=1,fill=NoShow))+
-  geom_bar(stat="identity",position="fill",width=0.5)+
-  ggtitle("Proportion of No Show across Age Ranges")+
-  scale_fill_manual(values=c("grey50","orangered"))
+ggplot(raw.data) + 
+  geom_bar(aes(x=Age.Range, fill=NoShow)) + 
+  ggtitle("Amount of No Show across Age Ranges")
+
+ggplot(raw.data) + 
+  geom_bar(aes(x=Age.Range, fill=NoShow), position='fill') + 
+  ggtitle("Proportion of No Show across Age Ranges")
+
 ```
 
 **10** How could you be misled if you only plotted 1 of these 2 plots of attendance by age group?
@@ -178,28 +175,22 @@ However, other patterns do emerge such as 10-20 age group is nearly twice as lik
 Another interesting finding is the `NA` group, they are the result of trying to assign age of 0 to groups and represent missing data.
 
 ```{r}
-sum(raw.data$Age == 0)
+raw.data %>% filter(Age == 0) %>% count()
 ```
 
 Next, we'll have a look at `SMSReceived` variable:
 
 ```{r,fig.align="center"}
-# [2.8] Age vs No Show vs SMS
-ggplot(raw.data,aes(x=Age,fill=`NoShow`))+
-  geom_density(color="white",alpha=0.8)+
-  ggtitle("Density of SMS received across Age and No Show")+
-  scale_fill_manual(values=c("grey50","orangered"))+
-  facet_grid(SMSReceived ~ .)
+ggplot(raw.data) + 
+  geom_bar(aes(x=SMSReceived, fill=NoShow), alpha=0.8) + 
+  ggtitle("Density of SMS received across Age and No Show")
+
+ggplot(raw.data) + 
+  geom_bar(aes(x=SMSReceived, fill=NoShow), position='fill', alpha=0.8) + 
+  ggtitle("Density of SMS received across Age and No Show")
 ```
 
 
-```{r,fig.align="center"}
-# [2.8.2] No Show vs SMS
-ggplot(raw.data,aes(x=SMSReceived,y=1,fill=`NoShow`))+
-  geom_bar(stat="identity",position="fill",width=0.5)+
-  scale_fill_manual(values=c("grey50","orangered"))+
-  ggtitle("Proportion of SMS received across No Show")
-```
 **11** From this plot does it look like SMS reminders increase or decrease the chance of someone not attending an appointment? Why might the opposite actually be true (hint: think about biases)? 
 
 **12** Create a similar plot which compares the the density of `NoShow` across the values of disability 
@@ -210,31 +201,33 @@ ggplot(raw.data,aes(x=SMSReceived,y=1,fill=`NoShow`))+
 
 Now let's look at the neighbourhood data as location can correlate highly with many social determinants of health. 
 
-```{r, warning=FALSE,fig.align="center"}
-ggplot(raw.data,aes(x=Neighbourhood,y=1,fill=`NoShow`))+
-  geom_bar(stat="identity")+
-  scale_fill_manual(values=c("grey50","orangered"))+
-  theme(axis.text.x = element_text(angle=45, hjust=1,size=5))+
-  ggtitle("Amount of No Shows across Neighbourhood")
+```{r, fig.align="center"}
+ggplot(raw.data) + 
+  geom_bar(aes(x=Neighbourhood, fill=NoShow)) + 
+  theme(axis.text.x = element_text(angle=45, hjust=1, size=5)) + 
+  ggtitle('Attendance by Neighbourhood')
 
-ggplot(raw.data,aes(x=Neighbourhood,y=1,fill=`NoShow`))+
-  geom_bar(stat="identity",position="fill")+
-  scale_fill_manual(values=c("grey50","orangered"))+
-  theme(axis.text.x = element_text(angle=45, hjust=1,size=5))+
-  ggtitle("Proportion of No Shows across Neighbourhood")
+
+ggplot(raw.data) + 
+  geom_bar(aes(x=Neighbourhood, fill=NoShow), position='fill') + 
+  theme(axis.text.x = element_text(angle=45, hjust=1, size=5)) + 
+  ggtitle('Proportional Attendance by Neighbourhood')
 ```
 
-Most neighbourhoods have similar proportions of no-show but some have much higher and lower rates.
+Most neighborhoods have similar proportions of no-show but some have much higher and lower rates.
 
 **13** Suggest a reason for differences in attendance rates across neighbourhoods.
 
 Now let's explore the relationship between gender and NoShow.
 ```{r, fig.align="center"}
-# [2.11] Gender vs No Show
-ggplot(raw.data,aes(x=Gender,y=1,fill=`NoShow`))+
-  geom_bar(stat="identity",position="fill",width=0.5)+
-  scale_fill_manual(values=c("grey50","orangered"))+
-  ggtitle("Proportion of Gender across No Show")
+ggplot(raw.data) + 
+  geom_bar(aes(x=Gender, fill=NoShow))
+  ggtitle("Gender by attendance")
+
+ggplot(raw.data) + 
+  geom_bar(aes(x=Gender, fill=NoShow), position='fill')
+  ggtitle("Gender by attendance")
+
 ```
 
 **14** Create a similar plot using `SocialWelfare`
@@ -256,27 +249,24 @@ Let's begin by seeing if appointments on any day of the week has more no-show's.
 raw.data <- raw.data %>% mutate(AppointmentDay = wday(AppointmentDate, label=TRUE, abbr=TRUE), 
                                  ScheduledDay = wday(ScheduledDate,  label=TRUE, abbr=TRUE))
 
-ggplot(raw.data,aes(x=AppointmentDay,y=1,fill=NoShow))+
-  geom_bar(stat="identity",width=0.5)+
-  ggtitle("Amount of No Show across Appointment Day")+
-  scale_fill_manual(values=c("grey50","orangered"))
+ggplot(raw.data) +
+  geom_bar(aes(x=AppointmentDay, fill=NoShow)) +
+  ggtitle("Amount of No Show across Appointment Day") 
 
-ggplot(raw.data,aes(x=AppointmentDay,y=1,fill=NoShow))+
-  geom_bar(stat="identity",position="fill",width=0.5)+
-  ggtitle("Proportion of No Show across Appointment Day")+
-  scale_fill_manual(values=c("grey50","orangered"))
+ggplot(raw.data) +
+  geom_bar(aes(x=AppointmentDay, fill=NoShow), position = 'fill') +
+  ggtitle("Amount of No Show across Appointment Day") 
 
 ```
 Let's begin by creating a variable called `Lag`, which is the difference between when an appointment was scheduled and the actual appointment.
 
-```{r,echo=FALSE,fig.align="center"}
-raw.data <- raw.data %>% mutate(Lag=AppointmentDate - ScheduledDate)
+```{r, fig.align="center"}
+raw.data <- raw.data %>% mutate(Lag.days=difftime(AppointmentDate, ScheduledDate, units = "days"),
+                                Lag.hours=difftime(AppointmentDate, ScheduledDate, units = "hours"))
 
-ggplot(raw.data,aes(x=Lag,fill=`NoShow`))+
-  geom_density(color="white",alpha=0.8)+
-  coord_cartesian(xlim=c(0,1000))+
-  scale_fill_manual(values=c("grey50","orangered"))+
-  ggtitle("Density of Lag across 'No Show'")
+ggplot(raw.data) + 
+  geom_density(aes(x=Lag.days, fill=NoShow), alpha=0.7)+
+  ggtitle("Density of Lag (days) by attendance")
 ```
 
 **15** Have a look at the values in lag variable, does anything seem odd?
@@ -285,55 +275,50 @@ ggplot(raw.data,aes(x=Lag,fill=`NoShow`))+
 
 Let's see how well we can predict NoShow from the data. 
 
-We'll start by preparing the data, followed by splitting it into testing and training set, modeling and finally, evaluating our results.
+We'll start by preparing the data, followed by splitting it into testing and training set, modeling and finally, evaluating our results. For now we will subsample but please run on full dataset for final execution.
+
 
 ```{r}
-data.prep = raw.data %>% select(Gender, Lag, Age, ScheduledDay, 
-                                AppointmentDay, Neighbourhood, SocialWelfare,
-                                Hypertension, Diabetes, NoShow,
-                                AlcoholUseDisorder, Disability, SMSReceived) %>%
-                          mutate(Gender = as.factor(Gender),
-                                 NoShow = as.factor(NoShow),
-                                 Neighbourhood = as.factor(Neighbourhood))
-set.seed(41)
-splitr = sample.split(data.prep$NoShow, SplitRatio = 0.7)
-train  = subset(data.prep,splitr == TRUE)
-test   = subset(data.prep,splitr == FALSE)
+### REMOVE SUBSAMPLING FOR FINAL MODEL
+data.prep <- raw.data %>% select(-AppointmentID, -PatientID) #%>% sample_n(10000)
+
+set.seed(42)
+data.split <- initial_split(data.prep, prop = 0.7)
+train  <- training(data.split)
+test <- testing(data.split)
 ```
 
 Let's now set the cross validation parameters, and add classProbs so we can use AUC as a metric for xgboost.
 
 ```{r}
-fit.control = trainControl(method="cv",number=3,
+fit.control <- trainControl(method="cv",number=3,
                            classProbs = TRUE, summaryFunction = twoClassSummary)
-
 ```
 
 **16** Based on the EDA, how well do you think this is going to work?
 
 Now we can train our XGBoost model
 ```{r}
-xgb.grid = expand.grid(eta=c(0.05),
+xgb.grid <- expand.grid(eta=c(0.05),
                        max_depth=c(4),colsample_bytree=1,
                        subsample=1, nrounds=500, gamma=0, min_child_weight=5)
-set.seed(38)
-xgb.model = train(NoShow ~ .,data=train,method="xgbTree",metric="ROC",
+
+xgb.model <- train(NoShow ~ .,data=train, method="xgbTree",metric="ROC",
                   tuneGrid=xgb.grid, trControl=fit.control)
 
-xgb.pred = predict(xgb.model, newdata=test)
-xgb.probs = predict(xgb.model ,newdata=test,type="prob")
-test$NoShow.numerical = ifelse(test$NoShow=="Yes",1,0)
+xgb.pred <- predict(xgb.model, newdata=test)
+xgb.probs <- predict(xgb.model, newdata=test, type="prob")
 ```
 
 ```{r}
-confusionMatrix(xgb.pred,test$NoShow,positive="Yes")
-paste("XGBoost Area under ROC Curve: ",round(auc(test$NoShow.numerical,xgb.probs[,2]),3),sep="")
+test <- test %>% mutate(NoShow.numerical = ifelse(NoShow=="Yes",1,0))
+confusionMatrix(xgb.pred, test$NoShow, positive="Yes")
+paste("XGBoost Area under ROC Curve: ", round(auc(test$NoShow.numerical, xgb.probs[,2]),3), sep="")
 ```
 
 This isn't an unreasonable performance, but let's look a bit more carefully at the correct and incorrect predictions,
 
 ```{r ,fig.align="center"}
-# [4.7] Prepare df for accuracy plot
 xgb.probs$Actual = test$NoShow.numerical
 xgb.probs$ActualClass = test$NoShow
 xgb.probs$PredictedClass = xgb.pred
@@ -351,7 +336,6 @@ ggplot(xgb.probs,aes(x=Yes,y=Actual,color=Match))+
 Finally, let's close it off with the variable importance of our model:
 
 ```{r,fig.align="center"}
-# [4.9] Prepare dataframe to plot variable importance
 results = data.frame(Feature = rownames(varImp(xgb.model)$importance)[1:10],
                      Importance = varImp(xgb.model)$importance[1:10,])
 
@@ -359,14 +343,14 @@ results$Feature = factor(results$Feature,levels=results$Feature)
 
 
 # [4.10] Plot Variable Importance
-ggplot(results,aes(x=Feature,y=Importance,fill=Importance))+
+ggplot(results, aes(x=Feature, y=Importance,fill=Importance))+
   geom_bar(stat="identity")+
   scale_fill_gradient(low="grey20",high="orangered")+
   ggtitle("XGBoost Variable Importance")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-**17** Using the [caret package](https://topepo.github.io/caret/) fit and evalaute 1 other ML model on this data and evaluate the performance.
+**17** Using the [caret package](https://topepo.github.io/caret/) fit and evaluate 1 other ML model on this data.
 
 **18** Based on everything, do you think we can trust analyses based on this dataset? Explain your reasoning.
 
