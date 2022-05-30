@@ -26,5 +26,6 @@ You can download copy of the assignments here.
 ### Practical 2 - Electronic Medical Records
 
 - [Assignment (html)](/static_files/practicals/lab2_electronic_medical_records.html)
-- [Assignment (rmd)](/static_files/practicals/lab2_electronic_medical_records.rmd)
+- [Assignment (rmd)](/static_files/practicals/lab2_electronic_medical_records.Rmd)
 - Due 2022-06-05T23:59:00+3:30
+
