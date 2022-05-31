@@ -21,3 +21,8 @@ Week 2 (Electronic Medical Records):
 
 - [Applying natural language processing techniques to develop a task-specific EMR interface for timely stroke thrombolysis: A feasibility study](/static_files/literature/stroke_nlp.pdf)
 - [Using natural language processing to improve efficiency of manual chart abstraction in research: the case of breast cancer recurrence](/static_files/literature/cancer_nlp.pdf)
+
+Week 3 (Medical Imaging):
+
+- [Development and Validation of a Deep Learning Algorithm for Detection of Diabetic Retinopathy in Retinal Fundus Photographs](/static_files/literature/retinopathy_cnn.pdf)
+- [Deep learning algorithm predicts diabetic retinopathy progression in individual patients](/static_files/literature/retinopathy_progression.pdf)
