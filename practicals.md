@@ -36,3 +36,9 @@ You can download copy of the assignments here.
 - [Dataset (zip)](https://drive.google.com/file/d/14H_FilWf12ONOJ_G4vvzNDDGvY7Ccqtm/view?usp=sharing)
 - Due 2022-06-12T23:59:00+3:00
 
+## Module 4
+### Practical 4 - Physiological Sensors
+
+- [Assignment (html)](/static_files/practicals/lab4_sensor.html)
+- [Assignment (rmd)](/static_files/practicals/lab4_sensor.rmd)
+- Due 2022-06-19T23:59:00+3:00
