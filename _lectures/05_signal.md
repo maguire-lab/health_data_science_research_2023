@@ -6,4 +6,6 @@ tldr: "Health data science tools and overview of medical signal data such as EEG
 links: 
     - url: /static_files/lectures/lecture_4_sensor_data.pdf
       name: slides 
+    - url: https://www.youtube.com/watch?v=Rn1xe29P0n4
+      name: recording
 ---

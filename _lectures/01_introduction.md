@@ -6,5 +6,7 @@ tldr: "A general introductory lecture to health data science and health data sci
 links: 
     - url: /static_files/lectures/lecture_0_introduction.pdf
       name: slides 
+    - url: https://www.youtube.com/watch?v=L8eMoAJkmqo
+      name: recording
 ---
 

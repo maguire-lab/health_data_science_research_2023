@@ -6,5 +6,7 @@ tldr: "An overview of medical databases, approaches for exploratory data analysi
 links: 
     - url: /static_files/lectures/lecture_1_medical_databases.pdf
       name: slides 
+    - url: https://www.youtube.com/watch?v=catEW4sm02s
+      name: recording
 ---
 
