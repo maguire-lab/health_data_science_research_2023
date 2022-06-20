@@ -8,6 +8,7 @@ links:
       name: slides 
     - url: https://www.youtube.com/watch?v=L8eMoAJkmqo
       name: recording
+hide_from_announcments: true
 ---
 
 <strong>Module 0: Reproducible Research</strong>

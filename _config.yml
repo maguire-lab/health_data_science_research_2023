@@ -47,10 +47,14 @@ collections:
         output: true
     proposal_class:
         output: true
-    assignments:
-        output: true
     practicals:
         output: true
     announcements:
         output: false
 
+defaults:
+  - scope:
+    path: ""
+    type: "practicals"
+    values:
+    layout: "practical"
