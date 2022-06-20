@@ -51,10 +51,3 @@ collections:
         output: true
     announcements:
         output: false
-
-defaults:
-  - scope:
-    path: ""
-    type: "practicals"
-    values:
-    layout: "practical"
