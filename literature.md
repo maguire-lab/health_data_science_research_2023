@@ -3,7 +3,9 @@ layout: literature
 title: Literature
 permalink: /literature/
 ---
-You can download copy of assigned papers for the Wednesday tutorials.
+You can download copy of assigned papers for the literature tutorials.
+Paper assignments will done randomly (without replacement) and will be emailed to the entire class ~1 week before the tutorial.
+Everyone will present and lead discussion for 1 paper (potentially sharing depending on class size).
 
 Module 0 (Reproducibility): 
 
@@ -29,3 +31,5 @@ Module 4 (Physiological Sensor):
 
 - [Improvements in atrial fibrillation detection for real-time monitoring](/static_files/literature/afib_markov.pdf)
 - [An artificial intelligence-enabled ECG algorithm for the identification of patients with atrial fibrillation during sinus rhythm: a retrospective analysis of outcome prediction](/static_files/literature/afib_ml.pdf)
+
+

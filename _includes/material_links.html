@@ -1,6 +1,6 @@
 
-    {% if include.lecture.links %}
-    {% for link in include.lecture.links %}
+    {% if include.material.links %}
+    {% for link in include.material.links %}
     [<a title="Download {{ link.name }}" href="
     {% if link.url contains '://' %}
       {{ link.url }} 

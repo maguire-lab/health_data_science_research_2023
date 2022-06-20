@@ -9,4 +9,4 @@ links:
     - url: https://www.youtube.com/watch?v=LOwqhigsbT4
       name: recording
 ---
-
+Module 2: Electronic Medical Records (Text data)

@@ -6,5 +6,6 @@ tldr: "An overview to reading papers and developing a proposal research question
 links: 
     - url: /static_files/proposal_class/Journal_Articles_and_Proposal_Intro.pdf
       name: slides 
+    - url: https://www.youtube.com/watch?v=vqbS5SfNbW4
+      name: recording
 ---
-

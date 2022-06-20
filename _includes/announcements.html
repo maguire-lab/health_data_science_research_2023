@@ -20,7 +20,7 @@
         {% if n.type %}
             {% if n.type == 'lecture' %}
                 New Lecture is up: {{ n.title }}
-                {% include lecture_links.html lecture=n %}
+                {% include material_links.html material=n %}
             {% elsif n.type == 'assignment' %}
                 New Assignment released: [<a href="{{ n.url | prepend: site.baseurl }}">{{ n.title }}</a>]
             {% else%}
