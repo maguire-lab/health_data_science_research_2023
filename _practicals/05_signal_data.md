@@ -1,11 +1,14 @@
-#---
-#type: practical
-#date: 2022-06-10T13:00:00+3:00
-#title: 'Practical 4 - EEGs Signal Analaysis'
-#pdf: /static_files/practicals/asg.pdf
-#attachment: /static_files/practicals/asg.zip
-#due_event: 
-#    type: due
-#    date: 2022-06-16T23:59:00+3:30
-#    description: 'Practical 4 due'
-#---
+---
+type: practical
+date: 2022-06-13T13:00:00+3:00
+title: 'Practical 4 - Physiological Sensors'
+due_event: 
+    type: due
+    date: 2022-06-19T23:59:00+3:00
+    description: 'Practical 4 due'
+links:
+    - url: /static_files/practicals/lab4_sensor.html
+      name: Practical (html)
+    - url: /static_files/practicals/lab4_sensor.rmd
+      name: Practical (rmd)
+---

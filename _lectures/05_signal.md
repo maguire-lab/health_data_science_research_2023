@@ -9,4 +9,4 @@ links:
     - url: https://www.youtube.com/watch?v=Rn1xe29P0n4
       name: recording
 ---
-Module 4: Physiological Sensors (Signal Data)
+<strong>Module 4: Physiological Sensors (Signal Data)</strong>

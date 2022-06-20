@@ -10,4 +10,4 @@ links:
       name: recording
         
 ---
-Module 3: Medical Imaging (Image Data)
+<strong>Module 3: Medical Imaging (Image Data)</strong>

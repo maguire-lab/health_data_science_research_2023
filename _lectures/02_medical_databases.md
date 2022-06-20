@@ -9,4 +9,4 @@ links:
     - url: https://www.youtube.com/watch?v=catEW4sm02s
       name: recording
 ---
-Module 1: Medical Databases (Tabular Data)
+<strong>Module 1: Medical Databases (Tabular Data)</strong>

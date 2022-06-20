@@ -10,4 +10,4 @@ links:
       name: recording
 ---
 
-Module 0: Reproducible Research
+<strong>Module 0: Reproducible Research</strong>
