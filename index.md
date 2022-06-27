@@ -2,8 +2,13 @@
 layout: home
 ---
 
+Note: this course will be updated for 2023 offering:
+- New practical assignments (more closely aligned to the lecture material)
+- Additional material/assignment document for the proposal with examples
+- Potentially grad student driven paper selection later on in the course
+- General cleaning/streamlining of lectures
 
-## Course Details 
+## 2022 Course Details 
 
 - M/W/F: 1300-1500, 1201 Mona Campbell Building
 
