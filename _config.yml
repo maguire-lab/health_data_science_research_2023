@@ -1,7 +1,7 @@
 # Site settings
 course_name: "CSCI6410/CSCI4148/EPAH6410: Applied Research in Health Data Science"
 course_description: "This course is an introduction to the application of data science methods to health data within interdisciplinary research contexts. Students will be introduced to the main types of health data and their principal analysis methods while developing key research skills specific to effectively working at the intersection of medicine and computer science.  This will encompass developing technical skills in the robust/reproducible analysis of data from medical databases, radiological imaging, electronic medical records, and physiological time-series data. Students will also gain specific training in developing interdisciplinary health data science research proposals including key considerations such as research ethics, data legislation, knowledge translation, and effective collaboration."
-course_semester: "Summer 2021-2022"
+course_semester: "Summer 2022-2023"
 
 baseurl: "/health_data_science_research" # the subpath of your site, e.g. /blog/
 url: "https://maguire-lab.github.io/" # the base hostname & protocol for your site
