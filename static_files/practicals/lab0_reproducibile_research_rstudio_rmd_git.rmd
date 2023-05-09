@@ -15,7 +15,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Objectives
 
-"Sheida is testing"
 - Begin to familiarise yourself with RStudio (and by extension R's tidyverse)
 - Learn how to create basic data visualisations using ggplot2
 - Use Rmarkdown to create literate/documented analyses
