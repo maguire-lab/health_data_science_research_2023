@@ -1,6 +1,6 @@
 ---
 type: literature
-date: 2022-06-09T13:00:00+3:00
+date: 2023-06-09T13:00:00+3:00
 title: Literature 4 - Physiological Sensors
 tldr: "Student led discussion of 2 papers analysing signal data from physiological sensors"
 #links: 

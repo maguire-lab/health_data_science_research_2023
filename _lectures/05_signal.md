@@ -1,6 +1,6 @@
 ---
 type: lecture
-date: 2022-06-07T13:00:00+3:00
+date: 2023-06-07T13:00:00+3:00
 title: Lecture 4 - Physiological Signal Data
 hide_from_announcments: true
 tldr: "Health data science tools and overview of medical signal data such as EEGs"

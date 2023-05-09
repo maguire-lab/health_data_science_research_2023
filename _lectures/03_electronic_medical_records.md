@@ -1,6 +1,6 @@
 ---
 type: lecture
-date: 2022-05-24T13:00:00+3:00
+date: 2023-05-24T13:00:00+3:00
 hide_from_announcments: true
 title: Lecture 2 - Electronic Medical Records (Dr. Jay Kumar)
 tldr: "Survey of text datatypes from EMRs and the main natural language processing approaches for their analysis"

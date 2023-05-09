@@ -1,6 +1,6 @@
 ---
 type: literature
-date: 2022-05-10T13:00:00+3:00
+date: 2023-05-10T13:00:00+3:00
 title: Literature 0 - Reproducible Research
 tldr: "Lecturer guided discussion and critique of initial papers"
 links: 
