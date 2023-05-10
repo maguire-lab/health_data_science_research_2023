@@ -7,8 +7,8 @@ hide_from_announcments: false
 links: 
     - url: /static_files/lectures/lecture_0_introduction.pdf
       name: slides 
-#    - url: https://www.youtube.com/watch?v=L8eMoAJkmqo
-#      name: recording
+    - url: https://www.youtube.com/watch?v=L8eMoAJkmqo
+      name: recording
 ---
 
 <strong>Module 0: Reproducible Research</strong>
