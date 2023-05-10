@@ -28,4 +28,4 @@ Submission will take place via the course brightspace page.
 
 See schedule or syllabus for key due dates.
 
-The full marking rubric is available in the [syllabus](/static_files/2022_syllabus.pdf)
+The full marking rubric is available in the [syllabus](/static_files/2023_syllabus.pdf)
