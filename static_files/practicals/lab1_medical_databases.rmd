@@ -21,6 +21,7 @@ library(viridis)        # Data Visualization
 library(ggthemes)       # Data Visualization
 library(pROC)           # Metrics
 library(caret)          # Machine Learning
+library(xgboost)        # xgboost model
 ```
 
 This practical is based on exploratory data analysis and prediction of a dataset derived from a municipal database of healthcare administrative data. This dataset is derived from Vitoria, the capital city of Espírito Santo, Brazil (population 1.8 million) and was freely shared under a creative commons license.
@@ -47,7 +48,7 @@ The data required is available via the [course website](https://github.com/magui
 
 ```{r parse}
 raw.data <- read_csv('lab1_data/2016_05v2_VitoriaAppointmentData.csv', col_types='fffTTifllllflf')
-#raw.data <- readr::read_csv('https://raw.githubusercontent.com/maguire-lab/health_data_science_research/ ... ')
+#raw.data <- readr::read_csv('https://raw.githubusercontent.com/maguire-lab/health_data_science_research_2023/ ... ')
 ```
 
 Now we need to check data is valid: because we specified col_types and the data parsed without error most of our data seems to at least be formatted as we expect i.e., ages are integers
