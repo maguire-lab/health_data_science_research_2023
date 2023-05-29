@@ -1,6 +1,6 @@
 ---
 title: 'Practical 2: Electronic Medical Records'
-author: "Finlay Maguire & Jay Kumar"
+author: "Finlay Maguire & Finlay Maguire"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -69,12 +69,13 @@ Let's remove stop words first. e.g., "the", "of", "to", and so forth.  These are
 ```{r}
 
 analysis.data <- filtered.data %>%
-    unnest_tokens(word, transcription) %>%
-	filter(!str_detect(word, "[0-9]")) %>%
-	anti_join(stop_words) %>%
-    group_by(note_id) %>%
-    summarise(transcription = paste(word, collapse = " ")) %>%
-    left_join(select(filtered.data, -transcription), by="note_id")
+  unnest_tokens(word, transcription) %>%
+  mutate(word = str_replace_all(word, "[^[:alnum:]]", "")) %>%
+  filter(!str_detect(word, "[0-9]")) %>%
+  anti_join(stop_words) %>%
+  group_by(note_id) %>%
+  summarise(transcription = paste(word, collapse = " ")) %>%
+  left_join(select(filtered.data, -transcription), by = "note_id")
 ```
 
 
