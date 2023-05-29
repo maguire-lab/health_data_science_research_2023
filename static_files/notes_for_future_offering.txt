@@ -1,0 +1,3 @@
+- Integrate more questions into practical than need going back to the labs
+- Switch labs to running on google colab with the R runtime
+- Lab 2 on EMRs is a bit weak/confusing - questions and a bit messy - could do with an update
