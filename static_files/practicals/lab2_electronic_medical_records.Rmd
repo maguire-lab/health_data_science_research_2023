@@ -1,6 +1,6 @@
 ---
 title: 'Practical 2: Electronic Medical Records'
-author: "Finlay Maguire"
+author: "Finlay Maguire & Jay Kumar"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -16,11 +16,14 @@ library(tidytext)
 library(textstem)
 library(clinspacy)
 library(topicmodels)
+library('reshape2')
+library(stringr)
+
 ```
 
 This practical is based on exploratory data analysis, named entity recognition, and topic modelling of unstructured medical note free-text data derived from electronic medical records (EMR).  Real EMR data is very difficult to access without a specific need/request so this data set is derived from [medical transcription](https://mtsamples.com/) data instead.  I'll also caveat that the options of natural language processing (NLP) in R are far inferior to those available in Python. 
 
-First, install the packages in the setup block (`install.packages(c("readr", "dplyr", "tidyr", "ggplot2", "tidtext", "textstem", "clinspacy", "topicmodels"))`).
+First, install the packages in the setup block (`install.packages(c("readr", "dplyr", "tidyr", "ggplot2", "tidtext", "textstem", "clinspacy", "topicmodels", "reshape2"))`).
 
 Note: To try and make it clearer which library certain functions are coming from clearer, I'll try to do explicit imports throughout this notebook.
 
@@ -48,38 +51,101 @@ So, how many transcripts are there from each specialty:
 
 
 ```{r}
-ggplot2::ggplot(raw.data, ggplot2::aes(y=medical_specialty)) + ggplot2::geom_bar()
+ggplot2::ggplot(raw.data, ggplot2::aes(y=medical_specialty)) + ggplot2::geom_bar() + labs(x="Document Count", y="Medical Speciality")
 ```
 
 Let's make our life easier and filter down to 3 specialties: a diagonstic/lab, a medical, and a surgical specialty
 
 ```{r} 
-analysis.data <- raw.data %>% dplyr::filter(medical_specialty %in% c("Neurology", "Radiology", "Neurosurgery")) 
+filtered.data <- raw.data %>% dplyr::filter(medical_specialty %in% c("Orthopedic", "Radiology", "Surgery")) 
 ```
 
 ## Text Processing
 
 Let's now apply our standard pre-processing to the transcripts from these specialties.  
 We are going to use the `tidytext` package to tokenise the transcript free-text.  
+Let's remove stop words first. e.g., "the", "of", "to", and so forth.  These are known as stop words and we can remove them relative easily using a list from  `tidytext::stop_words` and `dplyr::anti_join()`
+
+```{r}
+
+analysis.data <- filtered.data %>%
+    unnest_tokens(word, transcription) %>%
+	filter(!str_detect(word, "[0-9]")) %>%
+	anti_join(stop_words) %>%
+    group_by(note_id) %>%
+    summarise(transcription = paste(word, collapse = " ")) %>%
+    left_join(select(filtered.data, -transcription), by="note_id")
+```
+
+
+Now let's tokenize the `transcription` to words (unigram) 
 By default this tokenises to words but other options include characters, n-grams, sentences, lines, paragraphs, or separation around a regular expression.
 
 ```{r}
-tokenized.data <- analysis.data %>% tidytext::unnest_tokens(word, transcription, to_lower=TRUE)
+tokenized.data.unigram <- analysis.data %>% tidytext::unnest_tokens(word, transcription, to_lower=TRUE)
 ```
 
-How many unique tokens are there in the transcripts from each specialty:
-
+You can also do bi-grams
 ```{r}
-tokenized.data %>% dplyr::group_by(medical_specialty) %>% dplyr::distinct(word) %>% dplyr::summarise(n=dplyr::n())
+tokenized.data <- analysis.data %>% tidytext::unnest_tokens(ngram, transcription, token = "ngrams", n=2, to_lower = TRUE)
 ```
 
-However, there are a lot of extremely common words e.g., "the", "of", "to", and so forth.  
-These are known as stop words and we can remove them relative easily using a list from  `tidytext::stop_words` and `dplyr::anti_join()`
 
-**2** How many stop words are there in `tidytext::stop_words`?
+**2** How many unique tokens are there in the transcripts from each specialty:
 
 ```{r}
-no.stop.tokenized.data <- tokenized.data %>% dplyr::anti_join(tidytext::stop_words) 
+tokenized.data.unigram %>% dplyr::group_by(medical_specialty) %>% dplyr::distinct(word) %>% dplyr::summarise(n=dplyr::n())
+
+```
+For bigram
+
+```{r}
+tokenized.data %>% dplyr::group_by(medical_specialty) %>% dplyr::distinct(ngram) %>% dplyr::summarise(n=dplyr::n())
+```
+
+Let's plot some distribution of unigram tokens (words)
+
+
+```{r}
+word_counts <- tokenized.data.unigram %>%
+    group_by(word) %>%
+    summarise(count = n()) %>%
+    ungroup() %>%
+    arrange(desc(count))
+
+count_distribution <- word_counts %>%
+  group_by(count) %>%
+  summarise(num_words = n()) %>%
+  ungroup()
+ 
+ ggplot2::ggplot(count_distribution, aes(x = count, y = num_words)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Count Distribution",
+       x = "Count of Unique Words",
+       y = "Number of Words")
+```
+
+
+Let's plot some distribution of bigram tokens (words)
+
+
+```{r}
+word_counts <- tokenized.data %>%
+    group_by(ngram) %>%
+    summarise(count = n()) %>%
+    ungroup() %>%
+    arrange(desc(count))
+
+count_distribution <- word_counts %>%
+  group_by(count) %>%
+  summarise(num_words = n()) %>%
+  ungroup()
+ 
+ ggplot2::ggplot(count_distribution, aes(x = count, y = num_words)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Count Distribution",
+       x = "Count of Unique Bigrams",
+       y = "Number of Words")
 ```
 
 **3** How many unique words are there in each category without stop words and numbers?
@@ -90,9 +156,9 @@ Sometimes we are interested in tokenising/segmenting things other than words lik
 Now that we've tokenized to words and removed stop words, we can find the most commonly word used within each category:
 
 ```{r}
-no.stop.tokenized.data %>%
+tokenized.data %>%
   dplyr::group_by(medical_specialty) %>%
-  dplyr::count(word, sort = TRUE) %>%
+  dplyr::count(ngram, sort = TRUE) %>%
   dplyr::top_n(5)
 ```
 
@@ -104,7 +170,7 @@ Annoyingly, `tidytext` doesn't have a built-in lemmatizer.
 Unfortunately, a specialised lemmatizer like in `clinspacy` is going to be very painful to install so we will just use a simple lemmatizer for now:
 
 ```{r}
-lemmatized.data <- no.stop.tokenized.data %>% dplyr::mutate(lemma=textstem::lemmatize_words(word))
+lemmatized.data <- tokenized.data %>% dplyr::mutate(lemma=textstem::lemmatize_words(ngram))
 ```
 
 We can now calculate the frequency of lemmas within each specialty and note.
@@ -114,7 +180,7 @@ lemma.freq <- lemmatized.data %>%
   dplyr::group_by(medical_specialty) %>% 
   dplyr::mutate(proportion = n / sum(n)) %>%
   tidyr::pivot_wider(names_from = medical_specialty, values_from = proportion) %>%
-  tidyr::pivot_longer(`Neurosurgery`:`Radiology`,
+  tidyr::pivot_longer(`Surgery`:`Radiology`,
                names_to = "medical_specialty", values_to = "proportion")
 ```
 
@@ -122,8 +188,8 @@ And plot the relative proportions
 ```{r}
 
 ggplot2::ggplot(lemma.freq, ggplot2::aes(x=proportion, 
-                                         y=`Neurology`,
-                                         color=abs(`Neurology` - proportion))) + 
+                                         y=`Orthopedic`,
+                                         color=abs(`Orthopedic` - proportion))) + 
   ggplot2::geom_abline(color="gray40", lty=2) +
   ggplot2::geom_jitter(alpha=0.1, size=2.5, width=0.3, height=0.3) +
   ggplot2::geom_text(ggplot2::aes(label=lemma), check_overlap=TRUE, vjust=1.5) +
@@ -132,11 +198,11 @@ ggplot2::ggplot(lemma.freq, ggplot2::aes(x=proportion,
   ggplot2::scale_color_gradient(limits=c(0, 0.001), low="darkslategray4", high="gray75") +
   ggplot2::facet_wrap(~medical_specialty, ncol = 2) +
   ggplot2::theme(legend.position="none") +
-  ggplot2:: labs(y="Neurology", x = NULL)
+  ggplot2:: labs(y="Orthopedic", x = NULL)
 ```
-**6** What does this plot tell you about the relative similarity of lemma frequencies between neurosurgery and neurology and between radiology and neurosurgery? Based on what these specialties involve, is this what you would expect?
+**6** What does this plot tell you about the relative similarity of lemma frequencies between Surgery and Orthopedic and between radiology and Surgery? Based on what these specialties involve, is this what you would expect?
 
-**7** Modify the above plotting code to do a direct comparison of Neurosurgery and Radiology (i.e., have Neurosurgery or Radiology on the Y-axis and the other 2 specialties as the X facets)
+**7** Modify the above plotting code to do a direct comparison of Surgery and Radiology (i.e., have Surgery or Radiology on the Y-axis and the other 2 specialties as the X facets)
 
 ### TF-IDF Normalisation
 
@@ -197,9 +263,9 @@ all.counts <- dplyr::left_join(lemma.counts, total.counts)
 emr.dcm <- all.counts %>% tidytext::cast_dtm(note_id, lemma, n)
 ```
 
-Then we can use LDA function to fit a 3 topic (`k=3`) LDA-model
+Then we can use LDA function to fit a 5 topic (`k=5`) LDA-model
 ```{r}
-emr.lda <- topicmodels::LDA(emr.dcm, k=3, control=list(seed=42))
+emr.lda <- topicmodels::LDA(emr.dcm, k=5, control=list(seed=42))
 emr.topics <- tidytext::tidy(emr.lda, matrix='beta')
 ```
 
@@ -246,7 +312,7 @@ specialty_gamma %>%
   ggplot2::labs(x = "topic", y = expression(gamma))
 ```
 
-Interestingly, neurosurgery assigns mostly to a single topic but radiology and neurology are both more diverse in transcriptions.  We'd possibly expect this from radiology due to referring to imaging for many different diagnoses/reasons. 
+Interestingly, Surgery assigns mostly to a single topic but radiology and Orthopedic are both more diverse in transcriptions.  We'd possibly expect this from radiology due to referring to imaging for many different diagnoses/reasons. 
 However, this may all just reflect we are using too few topics in our LDA to capture the range of possible assignments. 
 
 **10** Repeat this with a 6 topic LDA, do the top terms from the 3 topic LDA still turn up? How do the specialties get split into sub-topics?
