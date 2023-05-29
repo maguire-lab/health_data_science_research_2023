@@ -38,7 +38,7 @@ dplyr::glimpse(raw.data)
 
 There is no explanation or data dictionary with this dataset, which is a surprisingly common and frustrating turn of events!  
 
-**1** Using the output of dplyr's `glimpse` command (or rstudio's data viewer by clicking on `raw.data` in the Environment pane) provide a description of what you think each in this dataset contains.
+**1** Using the output of dplyr's `glimpse` command (or rstudio's data viewer by clicking on `raw.data` in the Environment pane) provide a description of what you think each variable in this dataset contains.
 
 
 Let's see how many different medical specialties are featured in these notes: 
@@ -92,7 +92,7 @@ tokenized.data <- analysis.data %>% tidytext::unnest_tokens(ngram, transcription
 ```
 
 
-**2** How many unique tokens are there in the transcripts from each specialty:
+**2** How many unique unigrams are there in the transcripts from each specialty:
 
 ```{r}
 tokenized.data.unigram %>% dplyr::group_by(medical_specialty) %>% dplyr::distinct(word) %>% dplyr::summarise(n=dplyr::n())
@@ -149,7 +149,7 @@ count_distribution <- word_counts %>%
        y = "Number of Words")
 ```
 
-**3** How many unique words are there in each category without stop words and numbers?
+**3** How many unique bi-grams are there in each category without stop words and numbers?
 
 Sometimes we are interested in tokenising/segmenting things other than words like whole sentences or paragraphs.  
 **4** How many unique sentences are there in each category? Hint: use `?tidytext::unnest_tokens` to see the documentation for this function.
@@ -166,7 +166,7 @@ tokenized.data %>%
 We should lemmatize the tokenized words to prevent over counting of similar words before further analyses.  
 Annoyingly, `tidytext` doesn't have a built-in lemmatizer.
 
-**5** Do you think a general purpose lemmatizer will work well for medical data? Why not?
+**5** Do you think a general purpose lemmatizer will work well for medical data? Why might it not?
 
 Unfortunately, a specialised lemmatizer like in `clinspacy` is going to be very painful to install so we will just use a simple lemmatizer for now:
 
@@ -321,5 +321,4 @@ However, this may all just reflect we are using too few topics in our LDA to cap
 ## Credits
 
 Examples draw heavily on material (and directly quotes/copies text) from Julia Slige's `tidytext` textbook.
-
 
