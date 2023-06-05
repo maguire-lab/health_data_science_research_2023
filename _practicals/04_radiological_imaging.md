@@ -14,5 +14,5 @@ links:
     - url: /static_files/practicals/lab3_medical_images_CNN_v2.html
       name: Practical (html)
     - url: /static_files/practicals/lab_3_medical_images_CNN.ipynb
-      name: Practical (ipynb: backup for running on google colab using R runtime)
+      name: Practical (ipynb backup for running on google colab using R runtime)
 ---
