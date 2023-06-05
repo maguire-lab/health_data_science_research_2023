@@ -11,6 +11,8 @@ links:
       name: Practical (rmd)
     - url: https://drive.google.com/file/d/14H_FilWf12ONOJ_G4vvzNDDGvY7Ccqtm/view?usp=sharing
       name: Dataset (zip)
-#    - url: /static_files/practicals/lab3_medical_images_CNN.html
-#      name: Practical (html)
+    - url: /static_files/practicals/lab3_medical_images_CNN_v2.html
+      name: Practical (html)
+    - url: /static_files/practicals/lab_3_medical_images_CNN.ipynb
+      name: Practical (ipynb: backup for running on google colab using R runtime)
 ---
