@@ -1,6 +1,6 @@
 ---
-title: "Img-classification"
-author: "sheida"
+title: "lab 3 medical imaging"
+author: "Sheida Majouni & Finlay Maguire"
 date: "2023-05-30"
 output: html_document
 ---
@@ -9,22 +9,22 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-As we found for natural language processing, R is a little bit limited when it comes to deep neural networks. Unfortunately, these are currently the basis of gold-standard methods for medical image analysis. The ML/DL R packages that do exist provide interfaces (APIs) to libraries built in more faster languages like C/C++ and Java. This means there are a few “non-reproducible” installation and data gathering steps to run first. It also means there are a few “compromises” to get a practical that will A) be runnable B) actually complete within the allotted time and C) even vaguely works.
-Doing this on a full real dataset would likely follow a similar role (admittedly with more intensive training and more expressive architectures)
+As we found for natural language processing, R is a little bit limited when it comes to deep neural networks. Unfortunately, these networks are the current gold-standard methods for medical image analysis. The ML/DL R packages that do exist provide interfaces (APIs) to libraries built in other languages like C/C++ and Java. This means there are a few “non-reproducible” installation and data gathering steps to run first. It also means there are a few “compromises” to get a practical that will A) be runnable B) actually complete within the allotted time and C) even vaguely works.
+Doing this on a full real dataset would likely follow a similar process (admittedly with more intensive training and more expressive architectures). Google colab running an R kernel hasn't proven a very effective alternative thus far either.
 
 # Install packages
 
 In this practical, we will be performing image classification on real medical images using the Torch deep learning library and several packages to manage and preprocess the images. We will utilize the following packages for our task:
 
-gridExtra: This package provides functions for arranging multiple plots in a grid layout, allowing us to visualize and compare our results effectively.
+`gridExtra`: This package provides functions for arranging multiple plots in a grid layout, allowing us to visualize and compare our results effectively.
 
-jpeg: This package enables us to read and write JPEG images, which is a commonly used image format.
+`jpeg`: This package enables us to read and write JPEG images, which is a commonly used image format.
 
-imager: This package offers a range of image processing functionalities, such as loading, saving, resizing, and transforming images.
+`imager`: This package offers a range of image processing functionalities, such as loading, saving, resizing, and transforming images.
 
-magick: This package provides an interface to the ImageMagick library, allowing us to manipulate and process images using a wide variety of operations.
+`magick`: This package provides an interface to the ImageMagick library, allowing us to manipulate and process images using a wide variety of operations.
 
-To ensure that the required packages are available, we can install them using the install.packages() function. Additionally, some packages may require additional dependencies to be installed. In such cases, we can use the BiocManager::install() function from the Bioconductor project to install the necessary dependencies.
+To ensure that the required packages are available, we can install them using the `install.packages()` function. Additionally, some packages may require additional dependencies to be installed. In such cases, we can use the `BiocManager::install()` function from the Bioconductor project to install the necessary dependencies.
 
 Here is an example code snippet to install the required packages:
 you can uncomment the following code to install required packages
@@ -62,11 +62,10 @@ library(dplyr)
 library(abind)
 ```
 
-
 # Diagnosing Pneumonia from Chest X-Rays
 ## Parsing the data
 
-Today, we are going to look at a series of chest X-rays from children (from this paper) and see if we can accurately diagnose pneumonia from them.
+Today, we are going to look at a series of chest X-rays from children (from [this paper](https://www.cell.com/cell/fulltext/S0092-8674(18)30154-5)) and see if we can accurately diagnose pneumonia from them.  
 
 Chest X-ray images (anterior-posterior) were selected from retrospective cohorts of pediatric patients of one to five years old from Guangzhou Women and Children’s Medical Center, Guangzhou. All chest X-ray imaging was performed as part of patients’ routine clinical care. For the analysis of chest x-ray images, all chest radiographs were initially screened for quality control by removing all low quality or unreadable scans. The diagnoses for the images were then graded by two expert physicians before being cleared for inclusion. In order to account for any grading errors, the evaluation set was also checked by a third expert.
 
@@ -88,7 +87,6 @@ you can **unzip** the file in a data directory, using the following code:
 #unzip(zip_file, exdir = destination_dir)
 ```
 
-
 As with every data analysis, the first thing we need to do is learn about our data. If we are diagnosing pneumonia, we should use the internet to better understand what pneumonia actually is and what types of pneumonia exist.
 
 **0_** What is pneumonia and what is the point/benefit of being able to identify it from X-rays automatically?
@@ -104,7 +102,7 @@ files <- list.files(data_folder, full.names=TRUE, recursive=TRUE)
 sort(sample(files, 20))
 ```
 
-In the output above, you can see the filenames for all the chest X-rays. Look carefully at the filenames for the X-rays showing pneumonia (i.e., those in {train,test}/PNEUMONIA).
+In the output above, you can see the filenames for all the chest X-rays. Look carefully at the filenames for the X-rays showing pneumonia (i.e., those in `{train,test}/PNEUMONIA`).
 
 **1_** Do these filenames tell you anything about pneumonia? Why might this make predicting pneumonia more challenging?
 
@@ -134,20 +132,20 @@ test_pn <- list.files(test_pneumonia_dir, full.names = TRUE)
 val_pn <- list.files(val_pneumonia_dir, full.names = TRUE)
 val_normal <- list.files(val_normal_dir, full.names = TRUE)
 
-cat("Total images:", length(c(train_pn, train_normal, test_normal, test_pn, val_pn, val_normal)), "\n")
-cat("Total pneumonia images:", length(c(train_pn, test_pn, val_pn)), "\n")
-cat("Total Normal images:", length(c(train_normal, test_normal, val_normal)), "\n")
+cat("Total Images:", length(c(train_pn, train_normal, test_normal, test_pn, val_pn, val_normal)), "\n")
+cat("Total Pneumonia Images:", length(c(train_pn, test_pn, val_pn)), "\n")
+cat("Total Normal Images:", length(c(train_normal, test_normal, val_normal)), "\n")
 
 ```
 # Creating training datasets
 
 The provided code segment focuses on creating datasets for training, testing, and validation, as well as assigning labels to the corresponding datasets. Additionally, the code shuffles the data to introduce randomness in the order of the samples. Here's a breakdown of the code:
 
-train_dataset: Combines the lists train_pn and train_normal to create a single dataset for training.
+`train_dataset`: Combines the lists `train_pn` and `train_normal` to create a single dataset for training.
 
-train_labels: Creates a vector of labels for the training dataset by repeating "pneumonia" for the length of train_pn and "normal" for the length of train_normal.
+`train_labels`: Creates a vector of labels for the training dataset by repeating "pneumonia" for the length of `train_pn` and "normal" for the length of `train_normal`.
 
-shuffled_train_dataset, shuffled_train_labels: Extracts the shuffled training dataset and labels from the shuffled train_data data frame.
+`shuffled_train_dataset`, `shuffled_train_labels`: Extracts the shuffled training dataset and labels from the shuffled `train_data` data frame.
 
 By creating datasets and assigning labels, this code prepares the data for subsequent steps, such as model training and evaluation. The shuffling of the data ensures that the samples are presented in a random order during training, which can help prevent any biases or patterns that may exist in the original dataset.
 ```{r}
@@ -575,14 +573,14 @@ print(acc_plot)
 
 It seems that the model is not training effectively the model is struggling to learn from the data and is not generalizing well to unseen examples. It suggests that the model may be too complex or the training process needs adjustments.
 
-**5_** what is your suggestions to solve this problem? how we can improve the model?
+**5_** what is your suggestions to solve this problem? How could we improve this model?
 
 # Data Augmentation
-Data augmentation is indeed one of the solutions to consider when facing training difficulties. Data augmentation involves applying various transformations or modifications to the existing training data, effectively expanding the dataset and introducing additional variations. This technique can help improve model performance and generalization by providing the model with more diverse examples to learn from.
+Data augmentation is one of the solutions to consider when facing training difficulties. Data augmentation involves applying various transformations or modifications to the existing training data, effectively expanding the dataset and introducing additional variations. This technique can help improve model performance and generalization by providing the model with more diverse examples to learn from.
 
 By applying data augmentation, we can create new training samples with slight modifications, such as random rotations, translations, flips, zooms, or changes in brightness and contrast. These modifications can mimic real-world variations and increase the model's ability to handle different scenarios. Data augmentation increased dataset size, improved generalization, and reduced overfitting.
 
-Below is an example that demonstrates how transformers can be applied to augment the data.
+Below is an example that demonstrates how we can augment the data.
 
 ```{r}
 img <- readImage(shuffled_train_dataset[5])
@@ -598,7 +596,7 @@ T_img <- torch_squeeze(torch_tensor(img)) %>%
 image(as.array(T_img))
 ```
 
-We can also add the transformer to our dataloader:
+We can also add the data transofmrations to our dataloader:
 
 ```{r}
 # Define a custom dataset class with transformations
@@ -656,16 +654,16 @@ batch[[1]]$size()
 
 Transfer learning is another technique in machine learning where knowledge gained from solving one problem is applied to a different but related problem. It involves leveraging pre-trained models that have been trained on large-scale datasets and have learned general features. By utilizing transfer learning, models can benefit from the knowledge and representations learned from these pre-trained models.
 
-keras and torchvison provide versions of all the integrated architectures that have already been trained on the ImageNet dataset.
+Torchvison provides versions of all the integrated architectures that have already been trained on the ImageNet dataset.
 
 **7_** What is ImageNet aka “ImageNet Large Scale Visual Recognition Challenge 2012”? How many images and classes does it involve? Why might this help us?
 
 MobileNet is a pre-trained model that can be effectively utilized in transfer learning scenarios. Do some research about this model.
 
 **8_** Why do you think using this architecture in this practical assignment can help to improve the results? 
-Hint: MobileNet publication
+Hint: See MobileNet publication
 
-**9_** How many parameters does this network have? How does this compare to better performing networks available in keras?
+**9_** How many parameters does this network have? How does this compare to better performing networks available in torch?
 
 In the following you can see an example of how we can load pre-trained models in our codes.
 
@@ -678,12 +676,7 @@ mobilenet <- model_mobilenet_v2(pretrained = TRUE)
 #in_features <- mobilenet$classifier$in_features
 mobilenet$classifier <- nn_linear(224*224*3, 2)   # Adjust the output size based on your classification task
 ```
-
 **10_** Using the provided materials in this practical, train a different network architecture. Does this perform better?
-
-Recommend: increasing the number of epochs from 3-10 to 30 to keras::fit and leaving it for a while!
-
-**11(bounce)_** Use data augmentation techniques. Did your model get better or not? explain 
 
 # Useful links
 https://medium.com/@kemalgunay/getting-started-with-image-preprocessing-in-r-52c7d153b381
