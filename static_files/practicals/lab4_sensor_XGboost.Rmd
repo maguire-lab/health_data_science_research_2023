@@ -153,10 +153,10 @@ apply(eeg_train, 2, tseries::adf.test)
 
 **6** Why are we interested in stationarity? What do the results of these tests tell us? (ignoring the lack of multiple comparison correction...)
 
-Then we may want to visually explore patterns of autocorrelation (previous values predict future ones) and cross-correlation (correlation across channels over time) using `forecast::ggAcf` function.
+Then we may want to visually explore patterns of autocorrelation (previous values predicting future ones) and cross-correlation (correlation across channels over time) using `forecast::ggAcf` function.
 
-The ACF plot displays the cross- and auto-correlation values for different lags (i.e., time delayed versions of each electrode's voltage timeseries) in the dataset. 
-It helps identify any significant correlations between channels and observations at different time points. 
+The ACF plot displays the cross-correlation between each pair of electrode channels and the auto-correlation within the same electrode (the plots along the diagonal.)
+
 Positive autocorrelation indicates that the increase in voltage observed in a given time-interval leads to a proportionate increase in the lagged time interval as well.
 Negative autocorrelation indicates the opposite!
 
