@@ -47,7 +47,8 @@ In combination with the EEG data collection, a camera was used to record whether
 This was eye status was then manually annotated onto the EEG data with `1` indicated the eyes being closed and `0` the eyes being open.
 Measures microvoltages are listed in chronological order with the first measured value at the top of the dataframe.
 
-Let's parse the data directly from `h2o`'s test data S3 bucket:
+Let's parse the data directly from the `h2o` library's (which we aren't actually using directly) test data S3 bucket:
+
 ```{r parse_data}
 eeg_url <- "https://h2o-public-test-data.s3.amazonaws.com/smalldata/eeg/eeg_eyestate_splits.csv"
 eeg_data <- read.csv(eeg_url)
@@ -65,7 +66,7 @@ eeg_validate <- subset(eeg_data, split == 'valid', select = -split)
 eeg_test <- subset(eeg_data, split == 'test', select = -split)
 ```
 
-**0** Knowing the `eeg_data` contains 117 seconds of data, inspect the `eeg_data` dataframe and work out approximately how many samples per second were taken?
+**0** Knowing the `eeg_data` contains 117 seconds of data, inspect the `eeg_data` dataframe and the code above to and determine how many samples per second were taken?
 
 **1** How many EEG electrodes/sensors were used?
 
@@ -79,6 +80,14 @@ sum(is.na(eeg_data))
 ```
 
 Great, now we can start generating some plots to look at this data within the time-domain.
+
+First we use `reshape2::melt()` to transform the `eeg_data` dataset from a wide format to a long format expected by `ggplot2`.
+
+Specifically, this converts from "wide" where each electrode has its own column, to a "long" format, where each observation has its own row. 
+This format is often more convenient for data analysis and visualization, especially when dealing with repeated measurements or time-series data.
+
+We then use `ggplot2` to create a line plot of electrode intensities per sampling time, with the lines coloured by electrode, and the eye status annotated using dark grey blocks.
+
 ```{r plot_data}
 melt <- reshape2::melt(eeg_data %>% dplyr::select(-split), id.vars=c("eyeDetection", "ds"), variable.name = "Electrode", value.name = "microvolts")
 
@@ -100,6 +109,9 @@ ggplot2::ggplot(melt, ggplot2::aes(x=ds, y=microvolts, color=Electrode)) +
 
 Let's see if we can directly look at the distribution of EEG intensities and see how they related to eye status.
 
+
+As there are a few extreme outliers in voltage we will use the `dplyr::filter` function to remove values outwith of 3750 to 50003. The function uses the `%in%` operator to check if each value of microvolts is within that range. The function also uses the `dplyr::mutate()` to change the type of the variable eyeDetection from numeric to a factor (R's categorical variable type).
+
 ```{r compare_distrib}
 melt_train <- reshape2::melt(eeg_train, id.vars=c("eyeDetection", "ds"), variable.name = "Electrode", value.name = "microvolts")
 
@@ -111,7 +123,8 @@ ggplot2::ggplot(filt_melt_train, ggplot2::aes(y=Electrode, x=microvolts, fill=ey
 
 
 
-Plots are great but sometimes so it is also useful to directly look at the summary statistics and how they related to eye status:
+Plots are great but sometimes so it is also useful to directly look at the summary statistics and how they related to eye status.
+We will do this by grouping the data based on eye status and electrode before calculating the statistics using the convenient `dplyr::summarise` function.
 
 ```{r compare_summary_stats}
 filt_melt_train %>% dplyr::group_by(eyeDetection, Electrode) %>% 
@@ -140,7 +153,13 @@ apply(eeg_train, 2, tseries::adf.test)
 
 **6** Why are we interested in stationarity? What do the results of these tests tell us? (ignoring the lack of multiple comparison correction...)
 
-Then we may want to visually explore patterns of autocorrelation (previous values predict future ones) and cross-correlation (correlation across channels over time) using `forecast::ggAcf` function? 
+Then we may want to visually explore patterns of autocorrelation (previous values predict future ones) and cross-correlation (correlation across channels over time) using `forecast::ggAcf` function.
+
+The ACF plot displays the cross- and auto-correlation values for different lags (i.e., time delayed versions of each electrode's voltage timeseries) in the dataset. 
+It helps identify any significant correlations between channels and observations at different time points. 
+Positive autocorrelation indicates that the increase in voltage observed in a given time-interval leads to a proportionate increase in the lagged time interval as well.
+Negative autocorrelation indicates the opposite!
+
 
 ```{r correlation}
 forecast::ggAcf(eeg_train %>% dplyr::select(-ds))
