@@ -1,6 +1,6 @@
 ---
 title: "Lab 4 - Physiological Sensors"
-author: "sheida"
+author: "Finlay Maguire & Sheida Majouni"
 date: "2023-06-10"
 output: html_document
 ---
@@ -9,11 +9,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-There are 2 packages you will need to install for today's practical: `install.packages(c("xgboost", "eegkit", "forecast", "tseries")` apart from that everything else should already be available on your system.
-However, I will endeavour to use explicit imports to make it clear where functions are coming from (functions without `library_name::` are part of base R or a function we've defined in this notebook).
+There are 3-4 packages you will need to install for today's practical: `install.packages(c("xgboost", "eegkit", "forecast", "tseries", "caret"))` apart from that everything else should already be available on your system. 
 
-```{r}
-# experimenting with this ML library on my quest to find something pleasant to use in R
+If you are using a newer Mac you may have to also install [quartz](https://www.xquartz.org/) to have everything work (do this if you see errors about `X11` during install/execution).
+
+I will endeavour to use explicit imports to make it clear where functions are coming from (functions without `library_name::` are part of base R or a function we've defined in this notebook).
+
+```{r libraries, echo=FALSE}
+# Using the same library we used earlier in the course for tabular data because we know it works!
 library(xgboost)
 
 # EEG manipulation library in R (although very limited compared to signal processing libraries available in other languages, matlab might actually still be a leader in this specific area)
@@ -22,6 +25,7 @@ library(eegkit)
 # some time series functions (that we only skim the depths of)
 library(forecast)
 library(tseries)
+library(caret)
 
 # just tidyverse libraries that should already be installed
 library(dplyr)
@@ -44,9 +48,7 @@ This was eye status was then manually annotated onto the EEG data with `1` indic
 Measures microvoltages are listed in chronological order with the first measured value at the top of the dataframe.
 
 Let's parse the data directly from `h2o`'s test data S3 bucket:
-```{r}
-library(xgboost)
-
+```{r parse_data}
 eeg_url <- "https://h2o-public-test-data.s3.amazonaws.com/smalldata/eeg/eeg_eyestate_splits.csv"
 eeg_data <- read.csv(eeg_url)
 
@@ -72,12 +74,12 @@ eeg_test <- subset(eeg_data, split == 'test', select = -split)
 Now that we have the dataset and some basic parameters let's begin with the ever important/relevant exploratory data analysis.
 
 First we should check there is no missing data!
-```{r}
+```{r check_na}
 sum(is.na(eeg_data))
 ```
 
 Great, now we can start generating some plots to look at this data within the time-domain.
-```{r}
+```{r plot_data}
 melt <- reshape2::melt(eeg_data %>% dplyr::select(-split), id.vars=c("eyeDetection", "ds"), variable.name = "Electrode", value.name = "microvolts")
 
 
@@ -87,13 +89,18 @@ ggplot2::ggplot(melt, ggplot2::aes(x=ds, y=microvolts, color=Electrode)) +
   ggplot2::geom_vline(ggplot2::aes(xintercept=ds), data=dplyr::filter(melt, eyeDetection==1), alpha=0.005)
 ```
 
+
+
+
+
 **2** Do you see any obvious patterns between eyes being open (dark grey blocks in the plot) and the EEG intensities?
+
 
 **3** Similarly, based on the distribution of eye open/close state over time to anticipate any temporal correlation between these states?
 
 Let's see if we can directly look at the distribution of EEG intensities and see how they related to eye status.
 
-```{r}
+```{r compare_distrib}
 melt_train <- reshape2::melt(eeg_train, id.vars=c("eyeDetection", "ds"), variable.name = "Electrode", value.name = "microvolts")
 
 # filter huge outliers in voltage
@@ -102,33 +109,49 @@ filt_melt_train <- dplyr::filter(melt_train, microvolts %in% (3750:5000)) %>% dp
 ggplot2::ggplot(filt_melt_train, ggplot2::aes(y=Electrode, x=microvolts, fill=eyeDetection)) + ggplot2::geom_boxplot()
 ```
 
+
+
 Plots are great but sometimes so it is also useful to directly look at the summary statistics and how they related to eye status:
 
-```{r}
+```{r compare_summary_stats}
 filt_melt_train %>% dplyr::group_by(eyeDetection, Electrode) %>% 
     dplyr::summarise(mean = mean(microvolts), median=median(microvolts), sd=sd(microvolts)) %>% 
     dplyr::arrange(Electrode)
 ```
+
+
+
 
 **4** Based on these analyses are any electrodes consistently more intense or varied when eyes are open?
 
 #### Time-Related Trends
 
 As it looks like there may be a temporal pattern in the data we should investigate how it changes over time.  
+
 First we will do a statistical test for stationarity:
 
-```{r}
+```{r convert_to_tseries}
 apply(eeg_train, 2, tseries::adf.test)
 ```
-**5** Why are we interested in stationarity? What do the results of these tests tell us? (ignoring the lack of multiple comparison correction...)
+
+
+**5** What is stationarity?
+
+
+**6** Why are we interested in stationarity? What do the results of these tests tell us? (ignoring the lack of multiple comparison correction...)
 
 Then we may want to visually explore patterns of autocorrelation (previous values predict future ones) and cross-correlation (correlation across channels over time) using `forecast::ggAcf` function? 
 
-```{r}
+```{r correlation}
 forecast::ggAcf(eeg_train %>% dplyr::select(-ds))
 ```
 
+
+
+
+
 **7** Do any fields show signs of strong autocorrelation (diagonal plots)? Do any pairs of fields show signs of cross-correlation? Provide examples.
+
 
 #### Frequency-Space 
 
@@ -136,22 +159,29 @@ We can also explore the data in frequency space by using a Fast Fourier Transfor
 After the FFT we can summarise the distributions of frequencies by their density across the power spectrum.
 This will let us see if there any obvious patterns related to eye status in the overall frequency distributions.
 
-```{r, fft_open}
+```{r fft_open}
 eegkit::eegpsd(eeg_train %>% dplyr::filter(eyeDetection == 0) %>% dplyr::select(-eyeDetection, -ds), Fs = Fs, xlab="Eye Open")
 ```
 
-```{r, fft_closed}
+```{r fft_closed}
 eegkit::eegpsd(eeg_train %>% dplyr::filter(eyeDetection == 1) %>% dplyr::select(-eyeDetection, -ds), Fs = Fs, xlab="Eye Closed")
 ```
 
+
+
+
+
+
 **8** Do you see any differences between the power spectral densities for the two eye states? If so, describe them.
+
+
 
 #### Independent Component Analysis
 
 We may also wish to explore whether there are multiple sources of neuronal activity being picked up by the sensors.  
 This can be achieved using a process known as independent component analysis (ICA) which decorrelates the channels and identifies the primary sources of signal within the decorrelated matrix.
 
-```{r}
+```{r ica, warning=FALSE}
 ica <- eegkit::eegica(eeg_train %>% dplyr::select(-eyeDetection, -ds), nc=3, method='fast', type='time')
 mix <- dplyr::as_tibble(ica$M)
 mix$eyeDetection <- eeg_train$eyeDetection
@@ -166,15 +196,16 @@ ggplot2::ggplot(mix_melt, ggplot2::aes(x=ds, y=M, color=`Independent Component`)
   ggplot2::scale_y_log10()
 ```
 
-**9** Does this suggest eye activate forms an independent component of activity across the electrodes?
+
+
+**9** Does this suggest eye opening relates to an independent component of activity across the electrodes?
+
 
 ### Eye Opening Prediction
 
 Now that we've explored the data let's use a simple model to see how well we can predict eye status from the EEGs:
 
-```{r}
-library(xgboost)
-
+```{r xgboost}
 # Convert the training and validation datasets to matrices
 eeg_train_matrix <- as.matrix(dplyr::select(eeg_train, -eyeDetection, -ds))
 eeg_train_labels <- as.numeric(eeg_train$eyeDetection) -1
@@ -182,7 +213,7 @@ eeg_train_labels <- as.numeric(eeg_train$eyeDetection) -1
 eeg_validate_matrix <- as.matrix(dplyr::select(eeg_validate, -eyeDetection, -ds))
 eeg_validate_labels <- as.numeric(eeg_validate$eyeDetection) -1
 
-# Build the GBM model
+# Build the xgboost model
 model <- xgboost(data = eeg_train_matrix, 
                  label = eeg_train_labels,
                  nrounds = 100,
@@ -191,14 +222,30 @@ model <- xgboost(data = eeg_train_matrix,
                  objective = "binary:logistic")
 
 print(model)
+```
+
+
+
+**10** Using the `caret` library (or any other library/model type you want such as a neural network) fit another model to predict eye opening.
+
+```{r model2}
 
 ```
 
-**10** Using the best performing of the two models calculate the test performance
+
+**11** Using the best performing of the two models (on the validation dataset) calculate and report the test performance (filling in the code below):
 
 ```{r test}
 
 ```
 
-**11** Describe 2 possible alternative modelling approaches we discussed in class but haven't explored in this notebook.
+**12** Describe 2 possible alternative modelling approaches for prediction of eye opening from EEGs we discussed in class but haven't explored in this notebook.
 
+
+**13** Find 2 R libraries you could use to implement these approaches.
+
+
+
+### Optional 
+
+**14** (Optional) As this is the last practical of the course - let me know how you would change future offerings of this course.  What worked and didn't work for you (e.g., in terms of the practicals, tutorials, and lectures)? What would you add or remove from the course? What was the main thing you will take away from this course? This will not impact your marks!
